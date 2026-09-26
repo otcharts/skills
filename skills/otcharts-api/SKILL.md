@@ -73,13 +73,16 @@ print(u.plan_name, u.quota_per, u.remaining, u.instruments_per_stream, u.resets)
   the plan (`usage().instruments_per_stream`; `None` means the whole book).
 - `history(venue, symbol, tf, since=...)` walks back through deep history, newest first. It is
   for paid plans from Build up; the free tier and Lite read the live window only.
-- Errors to catch:
+- Errors to catch (all subclass `OTChartsError`, so one `except OTChartsError` catches everything):
   - `AuthError` (401): a bad or revoked key.
   - `PlanError` (402/403): the plan does not open that book or instrument. The message says what is open.
   - `NotFound` (404): an unknown symbol.
   - `QuotaExceeded` (429): the request allowance is spent; sleep until `usage().resets`.
   - `TooManyStreams` (429 on a stream): close one of your own streams.
   - `HouseBusy` (503): the service is at capacity; wait `retry_after` seconds.
+  - `TransportError`: no answer at all (DNS, TLS, a dropped socket); retry with backoff.
+- `otc.venues()` lists the books and whether the plan opens each one. Timeframes are only in
+  `GET /v1/venues`.
 
 ## HTTP
 
@@ -99,8 +102,21 @@ curl -H "Authorization: Bearer $OTCHARTS_API_KEY" "https://otcharts.com/v1/symbo
 
 - `limit` is 1–5000 bars (default 300).
 - `before=<unix seconds>` pages back past the live window. It needs Build or higher.
-- `payout` is the percentage a winning contract pays, and it changes during the day. The break-even
-  win rate is `100 / (100 + payout)`, so 92% needs 52.1%. It reads `null` on the free tier and on `forex`.
+- `payout` is the percentage a winning contract pays, and it changes during the day. It reads
+  `null` on the free tier and on `forex`.
+- The break-even win rate as a fraction is `100 / (100 + payout)`; multiply by 100 for percent.
+  A 92% payout needs 0.521 of calls right, which is 52.1%.
+
+## Scoring a binary-options backtest
+
+State these choices in the output, because they change the number:
+- **Judge at the close.** A signal uses a bar only after it has closed. A signal computed on
+  the forming bar looks better than anything that can actually be traded.
+- **Settle on the expiry.** A 1-bar, 60-second contract entered at a bar's close settles at the
+  next bar's close. It wins if that close moved its way, and an unchanged close is a tie
+  (refunded, left out of the hit rate).
+- **Compare the hit rate with break-even for the payout**, and report the counts behind it.
+  Fewer than about 400 decided calls cannot tell a rate from chance.
 
 ## Plans
 
