@@ -1,8 +1,8 @@
 """Stream one instrument and print a 1-minute bar each time one closes.
 
-Works on the free tier, whose stream carries one instrument. It costs one
-request for as long as it runs; polling candles every minute instead would
-cost 1,440 a day.
+Needs a data plan (Lite or higher): the free tier has no live stream. It
+costs one request for as long as it runs; polling candles every minute
+instead would cost 1,440 a day.
 
     pip install otcharts
     export OTCHARTS_API_KEY=otc_live_...

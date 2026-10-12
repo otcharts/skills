@@ -33,8 +33,8 @@ export OTCHARTS_API_KEY=otc_live_...
 > Using the OTCharts skill, compare EUR/USD OTC on Pocket Option and Quotex side by side and
 > chart where the two brokers' prices part ways.
 
-The first two prompts run on the free tier. The payout list needs Lite or higher, and the
-two-broker comparison needs Run. The agent will say so when your plan falls short.
+The backtest runs on the free tier. The live stream and the payout list need Lite or higher,
+and the two-broker comparison needs Run. The agent will say so when your plan falls short.
 
 ## What the agent learns
 
